@@ -19,6 +19,7 @@
 #include "quantum.h"
 #include "rgb_functions.h"
 
+
 #define ___ KC_NO
 
 /* This is a shortcut to help you visually see your layout.

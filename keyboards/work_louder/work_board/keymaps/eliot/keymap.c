@@ -44,6 +44,18 @@ enum tap_dances {
 // What happens here is this: We first define a new custom keycode in the range not occupied by any other keycodes.
 // see https://github.com/qmk/qmk_firmware/blob/master/docs/feature_macros.md
 
+// generate json for a keymap (current directory should be  ./qmk_firmware ):
+//
+// qmk c2json -km eliot -kb work_louder/work_board ./keyboards/work_louder/work_board/keymaps/eliot/keymap.c -o eliot.json
+//
+// generate the c format for the keymap layout
+//
+// qmk json2c -o eliotc.c eliot.json
+
+// TODO: linux?
+// Keep practicing the linux way, it's really not that bad. After its all setup you can build and flash with one line.
+// install avrdude
+
 // enum custom_keycodes {
 //     QMKBEST = SAFE_RANGE,
 // };
