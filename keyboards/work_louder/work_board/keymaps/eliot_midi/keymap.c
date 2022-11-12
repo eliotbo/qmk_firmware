@@ -927,25 +927,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 int8_t column = keycode_index % 12;
                 int8_t row = keycode_index / 12;
 
+                bool already_playing = (clips_playing[column].channel == (midi_config.channel + 1)) && (clips_playing[column].clip == row);
+
                 // update global clips state. A row if 0 means, nothing is playing.
                 // Rows 1-4 are the clips
                 //
-                clips_playing[column] = (struct clip_t){midi_config.channel + 1, row};
-
-                // print the clips playing
-                for (uint8_t i = 0; i < 12; i++) {
-                    dprintf("column %d: channel %d, clip %d\n", i, clips_playing[i].channel, clips_playing[i].clip);
+                if (already_playing) {
+                    clips_playing[column] = (struct clip_t){0, 0};
+                } else {
+                    clips_playing[column] = (struct clip_t){midi_config.channel + 1, row};
                 }
+
 
                 // set all leds in the column to black
                 int8_t * column_indices = get_column_indices(keycode_index);
                 for (uint8_t i = 0; i < 4; i++) {
                     rgb_matrix_set_color(rgb_leds[column_indices[i]], 0, 0, 0);
                 }
-                // rgb_matrix_set_color_all(0, 0, 0);
+
 
                 struct Color color = colorz[midi_config.channel];
-                rgb_matrix_set_color(led_index, color.r, color.g, color.b);
+
+                if (!already_playing) {
+                    rgb_matrix_set_color(led_index, color.r, color.g, color.b);
+                }
+
+                // rgb_matrix_set_color(led_index, color.r, color.g, color.b);
 
 
 
