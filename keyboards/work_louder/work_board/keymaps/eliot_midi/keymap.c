@@ -30,6 +30,7 @@ extern MidiDevice midi_device;
 
 enum planck_layers {
   _NOTES,
+  _DRUMS,
 //   _CHANNEL,
   _SESSION,
 //   _SEQUENCER,
@@ -39,6 +40,26 @@ enum planck_layers {
 
 enum tap_dances {
     ENC_TAP,
+};
+
+// COMBOS: combination of keys that have some effect
+enum combos {
+  AB_ESC,
+  JK_TAB,
+  QW_SFT,
+  SD_LAYER,
+};
+
+const uint16_t PROGMEM ab_combo[] = {KC_A, KC_B, COMBO_END};
+const uint16_t PROGMEM jk_combo[] = {KC_J, KC_K, COMBO_END};
+const uint16_t PROGMEM qw_combo[] = {KC_Q, KC_W, COMBO_END};
+const uint16_t PROGMEM sd_combo[] = {KC_S, KC_D, COMBO_END};
+
+combo_t key_combos[COMBO_COUNT] = {
+  [AB_ESC] = COMBO(ab_combo, KC_ESC),
+  [JK_TAB] = COMBO(jk_combo, KC_TAB),
+  [QW_SFT] = COMBO(qw_combo, KC_LSFT),
+  [SD_LAYER] = COMBO(sd_combo, MO(1))
 };
 
 // #define LOWER MO(_LOWER)
@@ -69,6 +90,106 @@ enum tap_dances {
 enum new_keycodes {
     FN_MO13 = SAFE_RANGE,
     FN_MO23,
+
+    // C_MAJ,
+    // D_MIN,
+    // E_MIN,
+    // A_MIN,
+
+    // https://github.com/antelaurijssen/qmk_firmware/blob/master/keyboards/s60_x/keymaps/bluebear/keymap.c
+    // MIDI Chord Keycodes - Major
+
+    MI_CH_C,
+    MI_CH_Cs,
+    MI_CH_Db = MI_CH_Cs,
+    MI_CH_D,
+    MI_CH_Ds,
+    MI_CH_Eb = MI_CH_Ds,
+    MI_CH_E,
+    MI_CH_F,
+    MI_CH_Fs,
+    MI_CH_Gb = MI_CH_Fs,
+    MI_CH_G ,
+    MI_CH_Gs,
+    MI_CH_Ab = MI_CH_Gs,
+    MI_CH_A,
+    MI_CH_As,
+    MI_CH_Bb = MI_CH_As,
+    MI_CH_B,
+
+    // MIDI Chord Keycodes Minor
+
+    MI_CH_Cm,
+    MI_CH_Csm,
+    MI_CH_Dbm = MI_CH_Csm,
+    MI_CH_Dm,
+    MI_CH_Dsm,
+    MI_CH_Ebm = MI_CH_Dsm,
+    MI_CH_Em,
+    MI_CH_Fm,
+    MI_CH_Fsm,
+    MI_CH_Gbm = MI_CH_Fsm,
+    MI_CH_Gm,
+    MI_CH_Gsm,
+    MI_CH_Abm = MI_CH_Gsm,
+    MI_CH_Am,
+    MI_CH_Asm,
+    MI_CH_Bbm = MI_CH_Asm,
+    MI_CH_Bm,
+
+    //MIDI Chord Keycodes Dominant Seventh
+
+    MI_CH_CDom7,
+    MI_CH_CsDom7,
+    MI_CH_DbDom7 = MI_CH_CsDom7,
+    MI_CH_DDom7,
+    MI_CH_DsDom7,
+    MI_CH_EbDom7 = MI_CH_DsDom7,
+    MI_CH_EDom7,
+    MI_CH_FDom7,
+    MI_CH_FsDom7,
+    MI_CH_GbDom7 = MI_CH_FsDom7,
+    MI_CH_GDom7,
+    MI_CH_GsDom7,
+    MI_CH_AbDom7 = MI_CH_GsDom7,
+    MI_CH_ADom7,
+    MI_CH_AsDom7,
+    MI_CH_BbDom7 = MI_CH_AsDom7,
+    MI_CH_BDom7,
+
+    // MIDI Chord Keycodes Diminished Seventh
+
+    MI_CH_CDim7,
+    MI_CH_CsDim7,
+    MI_CH_DbDim7 = MI_CH_CsDim7,
+    MI_CH_DDim7,
+    MI_CH_DsDim7,
+    MI_CH_EbDim7 = MI_CH_DsDim7,
+    MI_CH_EDim7,
+    MI_CH_FDim7,
+    MI_CH_FsDim7,
+    MI_CH_GbDim7 = MI_CH_FsDim7,
+    MI_CH_GDim7,
+    MI_CH_GsDim7,
+    MI_CH_AbDim7 = MI_CH_GsDim7,
+    MI_CH_ADim7,
+    MI_CH_AsDim7,
+    MI_CH_BbDim7 = MI_CH_AsDim7,
+    MI_CH_BDim7,
+
+
+    NINTH,
+    F_MAJ,
+    G_MAJ,
+    SEVENTH,
+    OCT_U,
+    INV_1,
+    DIM,
+    SUS4,
+    OCT_D,
+    INV_2,
+    AUG,
+    SUS2,
 
     MIDI_CC_01,
     MIDI_CC_02,
@@ -363,6 +484,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     // [_LOWER]  = { ENCODER_CCW_CW(KC_PGDN, KC_PGUP) },
     // [_RAISE]  = { ENCODER_CCW_CW(KC_VOLU, KC_VOLU) },
     [_NOTES] = { ENCODER_CCW_CW(MI_VELD, MI_VELU) },
+    [_DRUMS] = { ENCODER_CCW_CW(MI_VELD, MI_VELU) },
     [_SESSION]  = { ENCODER_CCW_CW(MI_CHD, MI_CHU) },
     // [_CHANNEL]  = { ENCODER_CCW_CW(MI_MODSD, MI_MODSU) },
     // [_SEQUENCER] = { ENCODER_CCW_CW(SQ_TMPD, SQ_TMPU) },
@@ -395,12 +517,27 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_NOTES] = LAYOUT(
-        //
-        MI_C_4,  MI_D_4, MI_E_4, MI_F_4, MI_G_4, MI_A_4, MI_B_4, MI_C_4,  RGB_TOG, RGB_MOD,   R_M_TOG, R_M_MOD, KC_NO,
-        MI_C_3,  MI_D_3, MI_E_3, MI_F_3, MI_G_3, MI_A_3, MI_B_3, MI_C_4,  MI_D_4,  MI_E_4,  MI_G_4, MI_A_4,
-        MI_C_2,  MI_D_2, MI_E_2, MI_F_2, MI_G_2, MI_A_2, MI_B_2, MI_C_3,  MI_D_3,  MI_E_3,  MI_G_3, MI_A_3,
-        MI_PORT, MI_SOST, MI_SOFT, MI_LEG, MI_MOD, TO(1), TO(1), TO(2),  KC_TRNS,  MI_CHD,  KC_NO, MI_CHU
+        // modifier keys
+        // LALT = SEVENTH
+        // RALT = NINETH
+        // LCTL = INV_1
+        // RCTL = INV_2
+
+        MI_C_4,  MI_D_4,  MI_E_4,  MI_F_4, MI_G_4, MI_A_4, MI_B_4, MI_C_4,  MI_CH_C,   MI_CH_F,   MI_CH_G,   KC_LALT, TO(1),
+        MI_C_3,  MI_D_3,  MI_E_3,  MI_F_3, MI_G_3, MI_A_3, MI_B_3, MI_C_4,  MI_CH_Dm,  MI_CH_Em,  MI_CH_Am,  KC_RALT,
+        MI_C_2,  MI_D_2,  MI_E_2,  MI_F_2, MI_G_2, MI_A_2, MI_B_2, MI_C_3,  MI_OCTU,   SUS4,     DIM,        KC_LCTL,
+        MI_C_1,  MI_D_1,  MI_E_1,  MI_F_1, MI_G_1, MI_A_2, MI_A_2, MI_B_2,  MI_OCTD,   SUS2,     AUG,        KC_RCTL
     ),
+
+
+    [_DRUMS] = LAYOUT(
+        //
+        MI_C_2,  MI_Cs_2,  MI_D_2,  MI_Ds_2,     MI_OCT_1,   KC_NO, KC_NO, KC_NO,    MI_C_2,  MI_Cs_2,  MI_D_2,  MI_Ds_2,  TO(2),
+        MI_Gs_1, MI_A_1,   MI_As_1, MI_B_1,      MI_OCT_0,   KC_NO, KC_NO, KC_NO,    MI_Gs_1, MI_A_1,   MI_As_1, MI_B_1,
+        MI_E_1,  MI_F_1,   MI_Fs_1, MI_G_1,      MI_OCT_N1,  KC_NO, KC_NO, KC_NO,    MI_E_1,  MI_F_1,   MI_Fs_1, MI_G_1,
+        MI_C_1,  MI_Cs_1,  MI_D_1,  MI_Ds_1,     MI_OCT_N2,  KC_NO, KC_NO, KC_NO,    MI_C_1,  MI_Cs_1,  MI_D_1,  MI_Ds_1
+    ),
+
 
     [_SESSION] = LAYOUT(
         MIDI_CC_03,   MIDI_CC_09,   MIDI_CC_14,   MIDI_CC_15,   MIDI_CC_20,   MIDI_CC_21,   MIDI_CC_22,   MIDI_CC_23,   MIDI_CC_24,    MIDI_CC_25,   MIDI_CC_26,   MIDI_CC_27,   TO(0),
@@ -676,12 +813,18 @@ uint8_t get_keycode_index(enum new_keycodes key) {
 }
 
 void keyboard_post_init_user(void) {
-    // rgb_matrix_enable_noeeprom();
-    rgb_matrix_enable();
+    rgb_matrix_enable_noeeprom();
+    // rgb_matrix_enable();
     // rgblight_disable_noeeprom();
+    //
+    rgblight_sethsv_noeeprom(RGB_PINK);
+
     rgb_matrix_mode(RGB_MATRIX_CUSTOM_my_cool_effect);
+
+
+
     // rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-    // rgb_matrix_set_color_all(RGB_OFF);
+
 }
 
 void dance_enc_finished(qk_tap_dance_state_t *state, void *user_data) {
@@ -715,6 +858,38 @@ const uint8_t rgb_leds[49] = {
     13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
     12, 11, 10,  9,  8,  7,  6,  4,  3,  2,  1,  0
 };
+
+
+
+void apply_rgb_drums(void) {
+    for ( int i = 0; i < 4; i++ ) {
+        for (int j = 0; j < 4; j++) {
+            rgb_matrix_set_color(rgb_leds[i*12 + j], RGB_SPRINGGREEN);
+        }
+
+        for (int j = 4; j < 8; j++) {
+            rgb_matrix_set_color(rgb_leds[i*12 + j], RGB_OFF);
+        }
+
+
+        for (int j = 8; j < 12; j++) {
+            rgb_matrix_set_color(rgb_leds[i*12 + j], RGB_SPRINGGREEN);
+        }
+    }
+
+
+}
+
+void apply_rgb_notes(void) {
+    for ( int i = 0; i < 4; i++ ) {
+        for (int j = 0; j < 8; j++) {
+            rgb_matrix_set_color(rgb_leds[i*12 + j], RGB_PINK);
+        }
+        for (int j = 8; j < 12; j++) {
+            rgb_matrix_set_color(rgb_leds[i*12 + j], RGB_OFF);
+        }
+    }
+}
 
 struct clip_t {
     uint8_t channel;
@@ -857,7 +1032,28 @@ void write_to_led_pins(void) {
     return;
 }
 
+
+
+// TO receive MIDI,
+// see usb_get_midi
+// https://github.com/qmk/qmk_firmware/blob/master/tmk_core/protocol/midi/qmk_midi.c
+uint8_t mod_state;
+int16_t zeroth;
+int16_t third;
+int16_t fifth;
+int16_t seventh = -1;
+int16_t ninth = -1;
+
+int16_t zerothm;
+int16_t thirdm;
+int16_t fifthm;
+int16_t seventhm = -1;
+int16_t ninthm = -1;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+    uint16_t root_note = MIDI_INVALID_NOTE;
+
+    mod_state = get_mods();
 
     // rgb_matrix_indicators_user
     // if (keycode == USER09) {
@@ -878,6 +1074,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         //         dprintf("midi velocity %d\n", midi_config.velocity);
         //     }
         //     return false;
+
+        // midi_send_cc(&midi_device, 0, 0x10, 127);
+
         case MI_CHU:
             if (record->event.pressed) {
                 midi_config.channel++;
@@ -898,24 +1097,132 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
-        // case MIDI_CC_80:
-        //     if (record->event.pressed) {
-        //         midi_send_cc(&midi_device, midi_config.channel, 80, MIDI_CC_ON);
-        //         rgb_matrix_set_color_all(50, 200, 25);
-        //     } else {
-        //         midi_send_cc(&midi_device, midi_config.channel, 80, MIDI_CC_OFF);
-        //         rgb_matrix_set_color_all(20, 50, 200);
-        //     }
-        //     return true;
-        // case MIDI_CC_81:
-        //     if (record->event.pressed) {
-        //         midi_send_cc(&midi_device, midi_config.channel, 81, MIDI_CC_ON);
-        //         rgb_matrix_set_color_all(50, 200, 25);
-        //     } else {
-        //         midi_send_cc(&midi_device, midi_config.channel, 81, MIDI_CC_OFF);
-        //         rgb_matrix_set_color_all(20, 50, 200);
-        //     }
-        //     return true;
+
+
+        // TODO: make a global state for the keyboard, where each entry
+        // tells whether that key is pressed or not
+
+        case MI_CH_C ... MI_CH_B: // Major Chords
+            // if (record->event.pressed) {
+                root_note = keycode - MI_CH_C + MI_C;
+                zeroth = root_note;
+                third = root_note + 4;
+                fifth = root_note + 7;
+
+
+                if ((get_mods() & (MOD_BIT(KC_LCTRL) | MOD_BIT(KC_RCTRL)))) {
+                    zeroth = zeroth + 12;
+                }
+
+                if ((get_mods() &  MOD_BIT(KC_RCTRL))) {
+                    third = third + 12;
+                }
+
+                // if (zerothm == zeroth) {
+                //     zeroth = -1;
+                // } else {
+                //     process_midi(zeroth, record);
+                // }
+
+                process_midi(zeroth, record);
+                process_midi(third, record); // Major Third Note
+                process_midi(fifth, record);
+
+                // if ((get_mods() & MOD_BIT(KC_LALT)) == MOD_BIT(KC_LALT)) {
+                if ((get_mods() & MOD_BIT(KC_LALT))) {
+                    seventh = root_note + 11;
+                    process_midi(seventh, record);
+                }
+                if ((get_mods() & MOD_BIT(KC_RALT))) {
+                    ninth = root_note + 14;
+                    process_midi(ninth, record);
+                }
+            // } else {
+            //     if (zeroth > -1) {
+            //         process_midi(zeroth, record);
+            //         zeroth = -1;
+            //     }
+            //     if (third > -1) {
+            //         process_midi(third, record);
+            //         third = -1;
+            //     }
+            //     if (fifth > -1) {
+            //         process_midi(fifth, record);
+            //         fifth = -1;
+            //     }
+            //     if (seventh > -1) {
+            //         process_midi(seventh, record);
+            //         seventh = -1;
+            //     }
+            //     if (ninth > -1) {
+            //         process_midi(ninth, record);
+            //         ninth = -1;
+            //     }
+            // }
+
+            return true;
+
+        case MI_CH_Cm ... MI_CH_Bm: // Minor Chord
+            // if (record->event.pressed) {
+                root_note = keycode - MI_CH_Cm + MI_C;
+                // process_midi(root_note, record);
+                // process_midi(root_note + 3, record); // Minor Third Note
+                // process_midi(root_note + 7, record); // Fifth Note
+
+                zerothm = root_note;
+                thirdm = root_note + 3;
+                fifthm = root_note + 7;
+
+                if ((get_mods() & (MOD_BIT(KC_LCTRL) | MOD_BIT(KC_RCTRL)))) {
+                    zerothm = zerothm + 12;
+                }
+
+                if ((get_mods() &  MOD_BIT(KC_RCTRL))) {
+                    thirdm = thirdm + 12;
+                }
+
+                process_midi(zerothm, record);
+                process_midi(thirdm, record); // Major Third Note
+                process_midi(fifthm, record);
+
+                if ((get_mods() & MOD_BIT(KC_LALT))) {
+                    seventhm = root_note + 11;
+                    process_midi(seventhm, record);
+                }
+                if ((get_mods() & MOD_BIT(KC_RALT))) {
+                    ninthm = root_note + 14;
+                    process_midi(ninthm, record);
+                }
+            // } else {
+            //     process_midi(zerothm, record);
+            //     process_midi(thirdm, record);
+            //     process_midi(fifthm, record);
+            //     if (seventhm > -1) {
+            //         process_midi(seventhm, record);
+            //         seventhm = -1;
+            //     }
+            //     if (ninthm > -1) {
+            //         process_midi(ninthm, record);
+            //         ninthm = -1;
+            //     }
+            // }
+
+            return true;
+
+        case MI_CH_CDom7 ... MI_CH_BDom7: // Dominant 7th Chord
+            root_note = keycode - MI_CH_CDom7 + MI_C;
+            process_midi(root_note, record);
+            process_midi(root_note + 4, record); // Major Third Note
+            process_midi(root_note + 10, record); // Minor Seventh Note
+            break;
+
+        case MI_CH_CDim7 ... MI_CH_BDim7: // Diminished 7th Chord
+            root_note = keycode - MI_CH_CDim7 + MI_C;
+            process_midi(root_note, record);
+            process_midi(root_note + 3, record); // Minor Third Note
+            process_midi(root_note - 3, record); // Diminished 7th Note
+            break;
+
 
         case MIDI_CC_01 ... MIDI_CC_128:
             if (record->event.pressed) {
@@ -1031,14 +1338,33 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     writePinLow(B7);
 
     switch (get_highest_layer(state)) {
+        case 0:
+            // rgb_matrix_set_color_all(RGB_PINK);
+
+            midi_config.octave = 2;
+            apply_rgb_notes();
+
+            break;
         case 1:
-            writePinHigh(B2);
+            midi_config.octave = 2;
+            apply_rgb_drums();
+            //
+            // drums are from C1 to D#2.
+            // It seems Ableton thinks we send a C3 when we send MI_C_1.
+            // The solution is to send MI_OCT_0, so that the C1 is actually C1.
+            //
+
+
+            // rgb_matrix_set_color_all(RGB_SPRINGGREEN);
+            // writePinHigh(B2);
             break;
         case 2:
-            writePinHigh(B3);
+            rgb_matrix_set_color_all(RGB_OFF);
+            // writePinHigh(B3);
             break;
         case 3:
-            writePinHigh(B7);
+            rgb_matrix_set_color_all(RGB_WHITE);
+            // writePinHigh(B7);
             break;
     }
 
