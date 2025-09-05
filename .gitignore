@@ -5,6 +5,8 @@
 .DS_Store
 ._*
 
+/qmk_venv/
+
 # Merge files
 *.orig
 *.rej
