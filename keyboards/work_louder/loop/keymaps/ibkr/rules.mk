@@ -3,6 +3,9 @@
 # Enable MIDI for encoder control
 MIDI_ENABLE = yes
 
+# Enable Raw HID for external LED control
+RAW_ENABLE = yes
+
 # Disable encoder map since we're handling encoders manually
 ENCODER_MAP_ENABLE = no
 

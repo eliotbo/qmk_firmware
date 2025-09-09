@@ -17,10 +17,12 @@
 #include QMK_KEYBOARD_H
 #include "midi.h"
 #include "qmk_midi.h"
+#include "raw_hid.h"
 
 extern MidiDevice midi_device;
 
 /* IBKR Trading Keyboard Layout
+ * see LOOP_IBKR_FLASHING_GUIDE.md in root
  * ============================
  * 
  * Physical Layout (3x3 grid + 3 encoders):
@@ -56,6 +58,31 @@ extern MidiDevice midi_device;
 // MIDI CC values
 #define MIDI_CC_OFF     0
 #define MIDI_CC_ON      127
+
+// Raw HID command definitions
+enum hid_commands {
+    CMD_SET_ALL  = 1, // [1, r, g, b]
+    CMD_SET_ONE  = 2, // [2, led_index, r, g, b]
+    CMD_SET_MODE = 3, // [3, mode] (e.g., 0=BASE,1=BUY,2=SELL)
+};
+
+// Store individual LED colors when in HID override mode
+typedef struct {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} led_color_t;
+
+// Store the "all LEDs" color when using SET_ALL
+led_color_t hid_all_color = {0, 0, 0};
+
+
+led_color_t hid_led_colors[9] = {{0}};  // Store colors for 9 LEDs
+bool hid_individual_leds = false;  // Track if we're using individual LED control
+
+
+// Track if we're in HID control mode (only affects BASE layer)
+bool hid_rgb_override = false;
 
 enum layers {
     _BASE,   // Layer 0: Base trading functions
@@ -162,60 +189,75 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         case 0:  // Share quantity encoder
             if (clockwise) {
                 midi_send_cc(&midi_device, midi_channel, CC_SHARES_UP, MIDI_CC_ON);
-                // Send multiple CCs for acceleration
-                if (encoder_shift_mode) {
-                    for (int i = 0; i < 9; i++) {
-                        midi_send_cc(&midi_device, midi_channel, CC_SHARES_UP, MIDI_CC_ON);
-                    }
-                }
             } else {
                 midi_send_cc(&midi_device, midi_channel, CC_SHARES_DOWN, MIDI_CC_ON);
-                if (encoder_shift_mode) {
-                    for (int i = 0; i < 9; i++) {
-                        midi_send_cc(&midi_device, midi_channel, CC_SHARES_DOWN, MIDI_CC_ON);
-                    }
-                }
             }
             break;
             
         case 1:  // Stop loss encoder
             if (clockwise) {
                 midi_send_cc(&midi_device, midi_channel, CC_STOP_UP, MIDI_CC_ON);
-                if (encoder_shift_mode) {
-                    for (int i = 0; i < 9; i++) {
-                        midi_send_cc(&midi_device, midi_channel, CC_STOP_UP, MIDI_CC_ON);
-                    }
-                }
             } else {
                 midi_send_cc(&midi_device, midi_channel, CC_STOP_DOWN, MIDI_CC_ON);
-                if (encoder_shift_mode) {
-                    for (int i = 0; i < 9; i++) {
-                        midi_send_cc(&midi_device, midi_channel, CC_STOP_DOWN, MIDI_CC_ON);
-                    }
-                }
             }
             break;
             
         case 2:  // Limit price encoder
             if (clockwise) {
                 midi_send_cc(&midi_device, midi_channel, CC_LIMIT_UP, MIDI_CC_ON);
-                if (encoder_shift_mode) {
-                    for (int i = 0; i < 9; i++) {
-                        midi_send_cc(&midi_device, midi_channel, CC_LIMIT_UP, MIDI_CC_ON);
-                    }
-                }
             } else {
                 midi_send_cc(&midi_device, midi_channel, CC_LIMIT_DOWN, MIDI_CC_ON);
-                if (encoder_shift_mode) {
-                    for (int i = 0; i < 9; i++) {
-                        midi_send_cc(&midi_device, midi_channel, CC_LIMIT_DOWN, MIDI_CC_ON);
-                    }
-                }
             }
             break;
     }
     
     return false;  // Don't process further
+}
+
+// Raw HID receive handler for external LED control
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+    switch (data[0]) {
+        case CMD_SET_ALL:
+            if (length >= 4 && current_layer == _BASE) {
+                hid_rgb_override = true;
+                hid_individual_leds = false;  // We're using SET_ALL, not individual
+                hid_all_color.r = data[1];
+                hid_all_color.g = data[2];
+                hid_all_color.b = data[3];
+                // Reset individual LED colors when using SET_ALL
+                for (uint8_t i = 0; i < 9; i++) {
+                    hid_led_colors[i] = hid_all_color;
+                }
+            }
+            break;
+
+        case CMD_SET_ONE:
+            if (length >= 5 && current_layer == _BASE) {
+                hid_rgb_override = true;
+                hid_individual_leds = true;
+                uint8_t led_index = data[1];
+                if (led_index < 9) {
+                    hid_led_colors[led_index].r = data[2];
+                    hid_led_colors[led_index].g = data[3];
+                    hid_led_colors[led_index].b = data[4];
+                }
+            }
+            break;
+
+        case CMD_SET_MODE:
+            if (length >= 2) {
+                uint8_t mode = data[1];
+                if (mode <= 2) {
+                    layer_move(mode);
+                    // Only clear HID override when leaving BASE layer
+                    if (mode != _BASE) {
+                        hid_rgb_override = false;
+                    }
+                }
+            }
+            break;
+
+    }
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -475,10 +517,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     current_layer = get_highest_layer(state);
     
+    // Clear HID override when leaving BASE layer
+    if (current_layer != _BASE) {
+        hid_rgb_override = false;
+    }
+    
     switch (current_layer) {
         case 0:
-            // White for base layer
-            rgb_matrix_set_color_all(RGB_WHITE);
+            // White for base layer (unless overridden by HID)
+            if (!hid_rgb_override) {
+                rgb_matrix_set_color_all(RGB_WHITE);
+            }
             break;
         case 1:
             // Green for buy layer
@@ -501,16 +550,47 @@ void keyboard_post_init_user(void) {
 }
 
 // RGB Matrix indicator - runs continuously to maintain layer colors
-void rgb_matrix_indicators_user(void) {
-    switch (current_layer) {
-        case 0:
-            rgb_matrix_set_color_all(RGB_WHITE);
-            break;
-        case 1:
-            rgb_matrix_set_color_all(RGB_GREEN);
-            break;
-        case 2:
-            rgb_matrix_set_color_all(RGB_RED);
-            break;
-    }
-}
+// void rgb_matrix_indicators_user(void) {
+//     // Don't override HID-controlled colors on BASE layer
+//     if (current_layer == _BASE && hid_rgb_override) {
+//         return;
+//     }
+    
+//     switch (current_layer) {
+//         case 0:
+//             rgb_matrix_set_color_all(RGB_WHITE);
+//             break;
+//         case 1:
+//             rgb_matrix_set_color_all(RGB_GREEN);
+//             break;
+//         case 2:
+//             rgb_matrix_set_color_all(RGB_RED);
+//             break;
+//     }
+// }
+
+  void rgb_matrix_indicators_user(void) {
+      if (hid_rgb_override) {
+          if (hid_individual_leds) {
+              for (uint8_t i = 0; i < 9; i++) {
+                  rgb_matrix_set_color(i, hid_led_colors[i].r, hid_led_colors[i].g, hid_led_colors[i].b);
+              }
+          } else {
+              rgb_matrix_set_color_all(hid_all_color.r, hid_all_color.g, hid_all_color.b);
+          }
+          return;
+      }
+
+      // Only apply layer colors when NOT in HID override mode
+      switch (current_layer) {
+          case 0:
+              rgb_matrix_set_color_all(RGB_WHITE);
+              break;
+          case 1:
+              rgb_matrix_set_color_all(RGB_GREEN);
+              break;
+          case 2:
+              rgb_matrix_set_color_all(RGB_RED);
+              break;
+      }
+  }
