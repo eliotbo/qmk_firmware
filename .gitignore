@@ -7,6 +7,8 @@
 
 /qmk_venv/
 
+**/target/
+
 # Merge files
 *.orig
 *.rej
