@@ -1,8 +1,11 @@
 # Work Louder Work Board Firmware Flashing Guide
 
+see 3d model for the keys here
+https://www.printables.com/model/1066117-choc-louder-keycaps-choc-and-mx-spacing/files
+
 ## Quick Start (Environment Already Setup)
 
-Put keyboard in bootloader mode by pressing on the left-hand-keys (mash them ALL) while plugging in the cable.
+Put keyboard in bootloader mode by pressing on the top-left + space keys of the work board while plugging in the cable.
 
 here are the essential commands:
 

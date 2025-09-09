@@ -1,3 +1,5 @@
+// SEE WORKBOARD_FLASHING_GUIDE.md
+
 /* Copyright 2015-2017 Jack Humbert
  *
  * This program is free software: you can redistribute it and/or modify
