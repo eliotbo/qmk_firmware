@@ -8,6 +8,7 @@
 /qmk_venv/
 
 **/target/
+work_board_test/target/
 
 # Merge files
 *.orig
