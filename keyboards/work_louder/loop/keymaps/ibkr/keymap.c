@@ -1,19 +1,3 @@
-/* Copyright 2025 IBKR Trading Keymap
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include QMK_KEYBOARD_H
 #include "midi.h"
 #include "qmk_midi.h"
@@ -27,24 +11,26 @@ extern MidiDevice midi_device;
  * 
  * Physical Layout (3x3 grid + 3 encoders):
  * 
- *  [Enc0]    [Enc1]    [Enc2]
+ *  [Enc0] [Enc1] [Enc2] [0] [1] [2] [3] [4] [5] [6] [7] [8] [9]
  *  
- *  [0] [1] [2]
- *  [3] [4] [5]  
- *  [6] [7] [8]
  *
  * Encoder Functions (via MIDI CC):
- * - Encoder 0: Share quantity - MIDI CC 20/21 (decrement/increment)
- * - Encoder 1: Stop loss - MIDI CC 22/23 (decrease/increase)
- * - Encoder 2: Limit price - MIDI CC 24/25 (down/up)
+ * - Encoder 0: MIDI CC 20/21 (decrement/increment)
+ * - Encoder 1: MIDI CC 22/23 (decrease/increase)
+ * - Encoder 2: MIDI CC 24/25 (down/up)
  *
- * Key [8] is used for layer switching (Base -> Buy -> Sell -> Base)
- * Keys [0-7] send unique combinations for each layer
- * 
- * MIDI Channel Assignment:
+* MIDI Channel Assignment:
  * - Channel 1: Base layer
  * - Channel 2: Buy layer  
  * - Channel 3: Sell layer
+ *
+ * Encoder Press Functions -> Ctrl + Shift + :
+ * - Encoder 0: F9/F12/F15 (Base/Buy/Sell layer)
+ * - Encoder 1: F10/F13/F16 (Base/Buy/Sell layer)
+ * - Encoder 2: F11/F14/F17 (Base/Buy/Sell layer)
+ *
+ * 
+
  */
 
 // MIDI CC definitions for encoders
@@ -114,7 +100,8 @@ enum custom_keycodes {
     BASE_6,
     BASE_7,
     BASE_8,
-    
+    BASE_9,
+
     // Buy layer actions (using Alt+Shift+F13-F20)
     BUY_1,
     BUY_2,
@@ -124,6 +111,7 @@ enum custom_keycodes {
     BUY_6,
     BUY_7,
     BUY_8,
+    BUY_9,
     
     // Sell layer actions (using Ctrl+Alt+F13-F20)
     SELL_1,
@@ -134,6 +122,7 @@ enum custom_keycodes {
     SELL_6,
     SELL_7,
     SELL_8,
+    SELL_9,
     
     // Encoder press actions
     ENC0_PRESS,  // Quick share presets
@@ -156,7 +145,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ENC0_PRESS, ENC1_PRESS, ENC2_PRESS,
         BASE_1,     BASE_2,     BASE_3,
         BASE_4,     BASE_5,     BASE_6,
-        BASE_7,     BASE_8,     TO(1)
+        BASE_7,     BASE_8,     BASE_9
     ),
     
     /* Buy Layer
@@ -166,7 +155,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ENC0_PRESS, ENC1_PRESS, ENC2_PRESS,
         BUY_1,      BUY_2,      BUY_3,
         BUY_4,      BUY_5,      BUY_6,
-        BUY_7,      BUY_8,      TO(2)
+        BUY_7,      BUY_8,      BUY_9
     ),
     
     /* Sell Layer
@@ -176,7 +165,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         ENC0_PRESS, ENC1_PRESS, ENC2_PRESS,
         SELL_1,     SELL_2,     SELL_3,
         SELL_4,     SELL_5,     SELL_6,
-        SELL_7,     SELL_8,     TO(0)
+        SELL_7,     SELL_8,     SELL_9
     )
 };
 
@@ -275,56 +264,63 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case BASE_1:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F13);
+                tap_code(KC_F9);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BASE_2:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F14);
+                tap_code(KC_F10);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BASE_3:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F15);
+                tap_code(KC_F11);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BASE_4:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F16);
+                tap_code(KC_F12);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BASE_5:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F17);
+                tap_code(KC_F13);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BASE_6:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F18);
+                tap_code(KC_F14);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BASE_7:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F19);
+                tap_code(KC_F15);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BASE_8:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F20);
+                tap_code(KC_F16);
+                unregister_code(KC_LSFT);
+            }
+            return false;
+        case BASE_9:
+            if (record->event.pressed) {
+                register_code(KC_LSFT);
+                tap_code(KC_F17);
                 unregister_code(KC_LSFT);
             }
             return false;
@@ -333,121 +329,132 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case BUY_1:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F21);
+                tap_code(KC_F18);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BUY_2:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F22);
+                tap_code(KC_F19);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BUY_3:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F23);
+                tap_code(KC_F20);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BUY_4:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F24);
+                tap_code(KC_F21);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BUY_5:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F25);
+                tap_code(KC_F22);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BUY_6:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F26);
+                tap_code(KC_F23);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BUY_7:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F27);
+                tap_code(KC_F24);
                 unregister_code(KC_LSFT);
             }
             return false;
         case BUY_8:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F28);
+                tap_code(KC_F25);
                 unregister_code(KC_LSFT);
             }
             return false;
-            
+        case BUY_9:
+            if (record->event.pressed) {
+                register_code(KC_LSFT);
+                tap_code(KC_F26);
+                unregister_code(KC_LSFT);
+            }
+            return false;
+
         // Sell layer keys - Shift+F29 through Shift+F35, last one already has Shift
         case SELL_1:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F29);
+                tap_code(KC_F27);
                 unregister_code(KC_LSFT);
             }
             return false;
         case SELL_2:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F30);
+                tap_code(KC_F28);
                 unregister_code(KC_LSFT);
             }
             return false;
         case SELL_3:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F31);
+                tap_code(KC_F29);
                 unregister_code(KC_LSFT);
             }
             return false;
         case SELL_4:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F32);
+                tap_code(KC_F30);
                 unregister_code(KC_LSFT);
             }
             return false;
         case SELL_5:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F33);
+                tap_code(KC_F31);
                 unregister_code(KC_LSFT);
             }
             return false;
         case SELL_6:
             if (record->event.pressed) {
                 register_code(KC_LSFT);
-                tap_code(KC_F34);
+                tap_code(KC_F32);
                 unregister_code(KC_LSFT);
             }
             return false;
         case SELL_7:
             if (record->event.pressed) {
-                register_code(KC_LSFT);
-                tap_code(KC_F35);
-                unregister_code(KC_LSFT);
+                register_code(KC_LCTL);
+                tap_code(KC_F33);
+                unregister_code(KC_LCTL);
             }
             return false;
         case SELL_8:
             if (record->event.pressed) {
-                // Use Ctrl+Shift+F35 for uniqueness
-                register_code(KC_LCTL);
                 register_code(KC_LSFT);
-                tap_code(KC_F35);
+                tap_code(KC_F34);
                 unregister_code(KC_LSFT);
+            }
+            return false;
+        case SELL_9:
+            if (record->event.pressed) {
+                register_code(KC_LCTL);
+                tap_code(KC_F35);
                 unregister_code(KC_LCTL);
             }
             return false;
-            
+
         // Encoder press actions - Send Ctrl+Shift+F-keys based on layer
         case ENC0_PRESS:  // Cycle through preset share quantities
             if (record->event.pressed) {
@@ -455,13 +462,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 register_code(KC_LSFT);
                 switch(current_layer) {
                     case _BASE:
-                        tap_code(KC_F1);  // Base: Ctrl+Shift+F1
+                        tap_code(KC_F9);
                         break;
                     case _BUY:
-                        tap_code(KC_F2);  // Buy: Ctrl+Shift+F2
+                        tap_code(KC_F12);
                         break;
                     case _SELL:
-                        tap_code(KC_F3);  // Sell: Ctrl+Shift+F3
+                        tap_code(KC_F15);
                         break;
                 }
                 unregister_code(KC_LSFT);
@@ -469,19 +476,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             
-        case ENC1_PRESS:  // Toggle stop loss type ($/%)
+        case ENC1_PRESS:
             if (record->event.pressed) {
                 register_code(KC_LCTL);
                 register_code(KC_LSFT);
                 switch(current_layer) {
                     case _BASE:
-                        tap_code(KC_F4);  // Base: Ctrl+Shift+F4
+                        tap_code(KC_F10);
                         break;
                     case _BUY:
-                        tap_code(KC_F5);  // Buy: Ctrl+Shift+F5
+                        tap_code(KC_F13);
                         break;
                     case _SELL:
-                        tap_code(KC_F6);  // Sell: Ctrl+Shift+F6
+                        tap_code(KC_F16);
                         break;
                 }
                 unregister_code(KC_LSFT);
@@ -489,19 +496,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             
-        case ENC2_PRESS:  // Toggle order type (market/limit)
+        case ENC2_PRESS:
             if (record->event.pressed) {
                 register_code(KC_LCTL);
                 register_code(KC_LSFT);
                 switch(current_layer) {
                     case _BASE:
-                        tap_code(KC_F7);  // Base: Ctrl+Shift+F7
+                        tap_code(KC_F11);
                         break;
                     case _BUY:
-                        tap_code(KC_F8);  // Buy: Ctrl+Shift+F8
+                        tap_code(KC_F14);
                         break;
                     case _SELL:
-                        tap_code(KC_F9);  // Sell: Ctrl+Shift+F9
+                        tap_code(KC_F17);
                         break;
                 }
                 unregister_code(KC_LSFT);
@@ -549,31 +556,11 @@ void keyboard_post_init_user(void) {
     rgb_matrix_set_color_all(RGB_WHITE);
 }
 
-// RGB Matrix indicator - runs continuously to maintain layer colors
-// void rgb_matrix_indicators_user(void) {
-//     // Don't override HID-controlled colors on BASE layer
-//     if (current_layer == _BASE && hid_rgb_override) {
-//         return;
-//     }
-    
-//     switch (current_layer) {
-//         case 0:
-//             rgb_matrix_set_color_all(RGB_WHITE);
-//             break;
-//         case 1:
-//             rgb_matrix_set_color_all(RGB_GREEN);
-//             break;
-//         case 2:
-//             rgb_matrix_set_color_all(RGB_RED);
-//             break;
-//     }
-// }
-
-  void rgb_matrix_indicators_user(void) {
-      if (hid_rgb_override) {
-          if (hid_individual_leds) {
-              for (uint8_t i = 0; i < 9; i++) {
-                  rgb_matrix_set_color(i, hid_led_colors[i].r, hid_led_colors[i].g, hid_led_colors[i].b);
+void rgb_matrix_indicators_user(void) {
+    if (hid_rgb_override) {
+        if (hid_individual_leds) {
+            for (uint8_t i = 0; i < 9; i++) {
+                rgb_matrix_set_color(i, hid_led_colors[i].r, hid_led_colors[i].g, hid_led_colors[i].b);
               }
           } else {
               rgb_matrix_set_color_all(hid_all_color.r, hid_all_color.g, hid_all_color.b);
