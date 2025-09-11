@@ -24,6 +24,10 @@ sudo dfu-programmer atmega32u4 flash work_louder_loop_rev3_ibkr.hex
 sudo dfu-programmer atmega32u4 reset
 
 sudo dfu-programmer atmega32u4 erase
+sudo dfu-programmer atmega32u4 flash work_louder_loop_rev3_loop.hex
+sudo dfu-programmer atmega32u4 reset
+
+sudo dfu-programmer atmega32u4 erase
 sudo dfu-programmer atmega32u4 flash work_louder_work_board_rev3_ibkr_work.hex
 sudo dfu-programmer atmega32u4 reset
 

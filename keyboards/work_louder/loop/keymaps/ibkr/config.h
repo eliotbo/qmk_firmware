@@ -43,4 +43,4 @@
 #define RAW_EPSIZE 32
 
 // Feature flags
-#define HID_LONGPRESS_MS 500  // press duration threshold for encoder presses
+// Long press detection removed to avoid bootmagic conflicts

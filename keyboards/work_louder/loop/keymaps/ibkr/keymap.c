@@ -19,7 +19,7 @@ extern MidiDevice midi_device;
  * - NO F-key emissions (clean HID events only)
  * - Button events: [0x10, layer, idx, press/release]
  * - Encoder rotation: [0x11, enc_idx, delta]
- * - Encoder press: [0x12, enc_idx, short/long]
+ * - Encoder press: [0x12, enc_idx, 1] (always simple press)
  * - Layer changes: [0x13, layer]
  * - Boot hello: [0x7E, proto_ver, fw_major, fw_minor]
  *
@@ -53,7 +53,7 @@ extern MidiDevice midi_device;
 enum hid_device_to_host {
     EV_BTN      = 0x10,  // [0x10, layer, btn_idx, act] where act=1 press, 0 release
     EV_ENC      = 0x11,  // [0x11, enc_idx, delta] (+1 / -1 per detent)
-    EV_ENC_P    = 0x12,  // [0x12, enc_idx, kind] where kind=1 short, 2 long
+    EV_ENC_P    = 0x12,  // [0x12, enc_idx, 1] (always simple press)
     EV_LAYER    = 0x13,  // [0x13, layer] (sent on layer changes)
     EV_HELLO    = 0x7E,  // [0x7E, proto_ver=1, fw_major, fw_minor] (sent on boot)
 };
@@ -94,7 +94,6 @@ uint8_t current_layer = _BASE;
 
 // Host readiness tracking
 static bool host_ready = false;
-static uint16_t enc_press_t0[3] = {0};
 
 // RAW HID send helper
 static inline void hid_send(uint8_t id, const uint8_t *payload, uint8_t n) {
@@ -380,36 +379,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             send_btn_event(8, record->event.pressed);
             return false;
 
-        // Encoder press actions - Send HID events with short/long detection
+        // Encoder press actions - Send simple HID events (no long press detection)
         case ENC0_PRESS:
-            if (record->event.pressed) {
-                enc_press_t0[0] = timer_read();
-            } else {
-                uint16_t dt = timer_elapsed(enc_press_t0[0]);
-                uint8_t kind = (dt >= HID_LONGPRESS_MS) ? 2 : 1;
-                uint8_t p[2] = { 0, kind };
+            if (!record->event.pressed) {
+                // Only send on release (simple press)
+                uint8_t p[2] = { 0, 1 };  // encoder 0, simple press (kind=1)
                 hid_send(EV_ENC_P, p, sizeof p);
             }
             return false;
             
         case ENC1_PRESS:
-            if (record->event.pressed) {
-                enc_press_t0[1] = timer_read();
-            } else {
-                uint16_t dt = timer_elapsed(enc_press_t0[1]);
-                uint8_t kind = (dt >= HID_LONGPRESS_MS) ? 2 : 1;
-                uint8_t p[2] = { 1, kind };
+            if (!record->event.pressed) {
+                // Only send on release (simple press)
+                uint8_t p[2] = { 1, 1 };  // encoder 1, simple press (kind=1)
                 hid_send(EV_ENC_P, p, sizeof p);
             }
             return false;
             
         case ENC2_PRESS:
-            if (record->event.pressed) {
-                enc_press_t0[2] = timer_read();
-            } else {
-                uint16_t dt = timer_elapsed(enc_press_t0[2]);
-                uint8_t kind = (dt >= HID_LONGPRESS_MS) ? 2 : 1;
-                uint8_t p[2] = { 2, kind };
+            if (!record->event.pressed) {
+                // Only send on release (simple press)
+                uint8_t p[2] = { 2, 1 };  // encoder 2, simple press (kind=1)
                 hid_send(EV_ENC_P, p, sizeof p);
             }
             return false;
