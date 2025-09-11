@@ -9,6 +9,7 @@
 
 **/target/
 work_board_test/target/
+loop_board_bindings/target/
 
 # Merge files
 *.orig

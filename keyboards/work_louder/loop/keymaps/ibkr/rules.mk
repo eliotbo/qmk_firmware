@@ -1,7 +1,7 @@
 # IBKR Trading Keymap Build Options
 
-# Enable MIDI for encoder control
-MIDI_ENABLE = yes
+# Optional: keep MIDI but disable by default (can be overridden)
+MIDI_ENABLE ?= no
 
 # Enable Raw HID for external LED control
 RAW_ENABLE = yes

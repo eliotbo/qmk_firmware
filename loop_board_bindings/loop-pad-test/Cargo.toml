@@ -1,0 +1,30 @@
+[package]
+name = "loop-pad-test"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "pad-tester"
+path = "src/bin/pad_tester.rs"
+
+[features]
+default = ["hid"]
+hid = ["dep:hidapi"]
+midi = ["dep:midir"]
+mock = []
+
+[dependencies]
+anyhow = "1"
+thiserror = "1"
+log = "0.4"
+env_logger = "0.11"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+crossbeam-channel = "0.5"
+tokio = { version = "1.41", features = ["rt-multi-thread", "time", "macros", "sync", "signal"] }
+clap = { version = "4", features = ["derive"] }
+
+# Optional dependencies for features
+hidapi = { version = "2", optional = true }
+midir = { version = "0.9", optional = true }

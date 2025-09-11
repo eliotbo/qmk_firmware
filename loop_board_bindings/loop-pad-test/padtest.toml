@@ -1,0 +1,24 @@
+# Loop Pad Test Configuration
+
+[hid]
+# Work Louder Loop Pad USB identifiers
+vid = 0x574C   # Work Louder vendor ID
+pid = 0x1DF9   # Loop product ID
+usage_page = 0xFF60  # Vendor-specific usage page
+usage = 0x0061       # Vendor-specific usage
+
+[midi]
+# MIDI configuration (optional, disabled by default)
+port_hint = "Loop"   # Substring to match MIDI port name
+enabled = false      # Set to true to enable MIDI input
+
+[demo]
+# Initial settings for demo/testing
+start_layer = 0      # Start on BASE layer (0=BASE, 1=BUY, 2=SELL)
+arm_timeout_seconds = 30  # Auto-disarm after inactivity
+
+# Starting LED color (white)
+[demo.start_color]
+r = 255
+g = 255
+b = 255

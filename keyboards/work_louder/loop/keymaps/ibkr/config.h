@@ -17,7 +17,7 @@
 #pragma once
 
 // Encoder Configuration
-#define ENCODER_RESOLUTION 2  // Lower = more sensitive
+#define ENCODER_RESOLUTION 4  // 4 = one event per detent (default)
 
 // RGB Configuration for layer indication
 #ifdef RGB_MATRIX_ENABLE
@@ -35,3 +35,12 @@
 
 // Debounce for stability during rapid trading
 #define DEBOUNCE 5
+
+// RAW HID Configuration
+// VENDOR_ID and PRODUCT_ID are defined by the keyboard
+#define RAWHID_USAGE_PAGE 0xFF60
+#define RAWHID_USAGE      0x61
+#define RAW_EPSIZE 32
+
+// Feature flags
+#define HID_LONGPRESS_MS 500  // press duration threshold for encoder presses
