@@ -11,22 +11,22 @@
 source qmk_venv/bin/activate
 
 # 2. Compile the IBKR trading firmware
-qmk compile -kb work_louder/loop -km ibkr
-qmk compile -kb work_louder/work_board -km ibkr_work
-
 # 3. Enter bootloader mode
 # Hold the top-left encoder while plugging in the USB cable
 # OR press the reset button on the back of the PCB
 
 # 4. Flash the firmware
+qmk compile -kb work_louder/loop -km ibkr
 sudo dfu-programmer atmega32u4 erase
 sudo dfu-programmer atmega32u4 flash work_louder_loop_rev3_ibkr.hex
 sudo dfu-programmer atmega32u4 reset
 
+qmk compile -kb work_louder/loop -km default
 sudo dfu-programmer atmega32u4 erase
-sudo dfu-programmer atmega32u4 flash work_louder_loop_rev3_loop.hex
+sudo dfu-programmer atmega32u4 flash work_louder_loop_rev3_default.hex
 sudo dfu-programmer atmega32u4 reset
 
+qmk compile -kb work_louder/work_board -km ibkr_work
 sudo dfu-programmer atmega32u4 erase
 sudo dfu-programmer atmega32u4 flash work_louder_work_board_rev3_ibkr_work.hex
 sudo dfu-programmer atmega32u4 reset

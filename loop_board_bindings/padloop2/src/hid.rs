@@ -186,13 +186,13 @@ impl HidPad {
         self.write_packet(0x7D, &[1])
     }
 
-    /// Set all LEDs to the same color (0x01) - BASE layer only
+    /// Set all LEDs to the same color (0x01)
     pub fn set_all_leds(&self, rgb: Rgb) -> Result<()> {
         debug!("Setting all LEDs to RGB({},{},{})", rgb.r, rgb.g, rgb.b);
         self.write_packet(0x01, &[rgb.r, rgb.g, rgb.b])
     }
 
-    /// Set a single LED color (0x02) - BASE layer only
+    /// Set a single LED color (0x02)
     pub fn set_led(&self, idx: u8, rgb: Rgb) -> Result<()> {
         if idx >= 9 {
             return Err(anyhow::anyhow!("LED index must be 0-8, got {}", idx));

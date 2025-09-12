@@ -8,26 +8,55 @@ use rdev::{listen, Event, EventType, Key};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 fn update_all_leds(pad: &Pad, state: &TradingState, layer: u8) {
+    println!("=== Starting LED update for layer {} ===", layer);
+    println!("Armed state: {}", state.armed);
+    
+    // Define layer colors
+    let layer_color = match layer {
+        0 => Rgb { r: 100, g: 100, b: 100 }, // WHITE for BASE
+        1 => Rgb { r: 0, g: 100, b: 0 },     // GREEN for BUY
+        2 => Rgb { r: 100, g: 0, b: 0 },     // RED for SELL
+        _ => Rgb { r: 100, g: 100, b: 100 }, // Default to WHITE
+    };
+    
     for idx in 0..9u8 {
-        let color = if state.is_button_bound(layer, idx) {
-            // Check if this is an armed-sensitive button
-            if state.is_action_armed_sensitive(layer, idx) {
+        // Check if this button is armed-sensitive in the CURRENT layer
+        let is_armed_sensitive = state.is_action_armed_sensitive(layer, idx);
+        
+        // Check if button is bound in the current layer
+        let is_bound = state.is_button_bound(layer, idx);
+        
+        println!("Button {} in layer {}: bound={}, armed_sensitive={}", 
+                 idx, layer, is_bound, is_armed_sensitive);
+        
+        let color = if is_bound {
+            if is_armed_sensitive {
                 if state.armed {
-                    Rgb { r: 0, g: 100, b: 0 } // Green for armed sensitive when armed
+                    // Armed sensitive button when armed - use layer color
+                    println!("  -> Setting LAYER COLOR (armed sensitive + armed)");
+                    layer_color
                 } else {
-                    Rgb { r: 0, g: 0, b: 0 } // Off for armed sensitive when disarmed
+                    // Armed sensitive button when disarmed - LED off
+                    println!("  -> Setting BLACK (armed sensitive + disarmed)");
+                    Rgb { r: 0, g: 0, b: 0 }
                 }
             } else {
-                Rgb { r: 100, g: 100, b: 100 } // White for regular bound buttons
+                // Regular bound button - use layer color
+                println!("  -> Setting LAYER COLOR (regular bound button)");
+                layer_color
             }
         } else {
-            Rgb { r: 0, g: 0, b: 0 } // Off for unbound buttons
+            // Unbound button - LED off
+            println!("  -> Setting BLACK (unbound button)");
+            Rgb { r: 0, g: 0, b: 0 }
         };
         
+        println!("  Final: LED {} = RGB({},{},{})", idx, color.r, color.g, color.b);
         if let Err(e) = pad.set_led(idx, color) {
             eprintln!("Failed to set LED {}: {}", idx, e);
         }
     }
+    println!("=== LED update complete ===");
 }
 
 struct PadGuiApp {
@@ -110,6 +139,7 @@ impl eframe::App for PadGuiApp {
                                     Layer::Buy => 1,
                                     Layer::Sell => 2,
                                 };
+                                println!("GUI layer button clicked: {:?} -> {}", layer, layer_idx);
                                 let _ = self.layer_tx.send(layer_idx);
                             }
                         }
@@ -291,7 +321,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut pad = Pad::new(&config).expect("Failed to create pad");
         let rx = pad.spawn(&config).expect("Failed to spawn pad");
         
-        // Initialize LEDs on startup
+        // Send host ready signal
+        if let Err(e) = pad.send_ready() {
+            eprintln!("Failed to send host ready: {}", e);
+        }
+        
+        // Small delay to ensure pad is ready
+        thread::sleep(std::time::Duration::from_millis(100));
+        
+        // Initialize LEDs on startup (BASE layer)
         if let Ok(s) = state.lock() {
             update_all_leds(&pad, &s, 0); // Base layer on startup
         }
@@ -303,11 +341,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             // Check for layer changes from GUI
             if let Ok(layer) = layer_rx.try_recv() {
+                // Change layer
                 if let Err(e) = pad.set_layer(layer) {
                     eprintln!("Failed to set layer: {}", e);
                 }
                 
-                // Update state and LEDs
+                // Update state
                 if let Ok(mut s) = state.lock() {
                     s.set_layer(match layer {
                         0 => Layer::Base,
@@ -316,8 +355,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         _ => Layer::Base,
                     });
                     last_layer = layer;
-                    
-                    // Update all LEDs for the new layer
+                }
+                
+                // Update LEDs for the new layer
+                if let Ok(s) = state.lock() {
                     update_all_leds(&pad, &s, layer);
                 }
             }
@@ -332,8 +373,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 
                 if s.armed != last_armed_state {
                     last_armed_state = s.armed;
-                    
-                    // Update all LEDs when armed state changes
+                    println!("Armed state changed to {} - updating LEDs", s.armed);
                     update_all_leds(&pad, &s, current_layer);
                 }
             }
@@ -351,7 +391,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 2 => Layer::Sell,
                                 _ => Layer::Base,
                             });
-                            // Update all LEDs when layer changes from pad
+                            last_layer = layer;
+                            // Update LEDs for any layer change
                             update_all_leds(&pad, &s, layer);
                         }
                         PadEvent::Button { layer, idx, pressed } => {
