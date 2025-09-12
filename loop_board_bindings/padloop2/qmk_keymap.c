@@ -2,11 +2,7 @@
 #include "raw_hid.h"
 #include <string.h>
 
-#ifdef MIDI_ENABLE
-#include "midi.h"
-#include "qmk_midi.h"
-extern MidiDevice midi_device;
-#endif
+
 
 /* IBKR Trading Keyboard - RAW HID Protocol v1
  * ============================================
@@ -37,17 +33,7 @@ extern MidiDevice midi_device;
  * See docs/RAW_HID_PROTOCOL.md for full specification
  */
 
-// MIDI CC definitions for encoders
-#define CC_SHARES_DOWN  20
-#define CC_SHARES_UP    21
-#define CC_STOP_DOWN    22
-#define CC_STOP_UP      23
-#define CC_LIMIT_DOWN   24
-#define CC_LIMIT_UP     25
 
-// MIDI CC values
-#define MIDI_CC_OFF     0
-#define MIDI_CC_ON      127
 
 // Raw HID protocol definitions
 enum hid_device_to_host {
@@ -89,7 +75,7 @@ enum layers {
     _SELL    // Layer 2: Sell-specific actions
 };
 
-// Track current layer for RGB indication and MIDI channel
+// Track current layer for RGB indication 
 uint8_t current_layer = _BASE;
 
 // Host readiness tracking
@@ -195,39 +181,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     uint8_t p[2] = { index, (uint8_t)d };
     hid_send(EV_ENC, p, sizeof p);
     
-#ifdef MIDI_ENABLE
-    // Optional MIDI support if enabled
-    uint8_t midi_channel = current_layer;  // 0 for BASE, 1 for BUY, 2 for SELL
-    
-    switch(index) {
-        case 0:  // Share quantity encoder
-            if (clockwise) {
-                midi_send_cc(&midi_device, midi_channel, CC_SHARES_UP, MIDI_CC_ON);
-            } else {
-                midi_send_cc(&midi_device, midi_channel, CC_SHARES_DOWN, MIDI_CC_ON);
-            }
-            break;
-            
-        case 1:  // Stop loss encoder
-            if (clockwise) {
-                midi_send_cc(&midi_device, midi_channel, CC_STOP_UP, MIDI_CC_ON);
-            } else {
-                midi_send_cc(&midi_device, midi_channel, CC_STOP_DOWN, MIDI_CC_ON);
-            }
-            break;
-            
-        case 2:  // Limit price encoder
-            if (clockwise) {
-                midi_send_cc(&midi_device, midi_channel, CC_LIMIT_UP, MIDI_CC_ON);
-            } else {
-                midi_send_cc(&midi_device, midi_channel, CC_LIMIT_DOWN, MIDI_CC_ON);
-            }
-            break;
-    }
-#endif
-    
-    return false;  // Don't process further
-}
+
 
 // Raw HID receive handler for external LED control and host handshake
 void raw_hid_receive(uint8_t *data, uint8_t length) {

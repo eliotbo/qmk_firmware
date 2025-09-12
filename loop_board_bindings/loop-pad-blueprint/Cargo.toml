@@ -1,0 +1,21 @@
+[package]
+name = "loop-pad-blueprint"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+hid = ["dep:hidapi"]
+mock = []
+
+[dependencies]
+anyhow = "1"
+crossbeam-channel = "0.5"
+log = "0.4"
+env_logger = "0.10"
+
+# eframe re-exports egui; use glow backend for broad compatibility
+eframe = { version = "0.24", default-features = false, features = ["glow"] }
+
+# Optional HID support
+hidapi = { version = "2", optional = true }

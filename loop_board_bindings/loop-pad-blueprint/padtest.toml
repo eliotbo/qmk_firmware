@@ -1,0 +1,6 @@
+vid = 0x574C        # Work Louder
+pid = 0x1DF9        # Loop
+usage_page = 0xFF60 # Vendor-specific usage page
+usage = 0x0061      # Vendor-specific usage
+mock_enabled = false
+

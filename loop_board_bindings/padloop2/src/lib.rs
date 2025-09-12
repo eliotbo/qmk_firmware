@@ -1,11 +1,9 @@
 pub mod config;
 pub mod event;
+pub mod state;
 
 #[cfg(feature = "hid")]
 pub mod hid;
-
-#[cfg(feature = "midi")]
-pub mod midi;
 
 #[cfg(feature = "mock")]
 pub mod mock;
@@ -27,8 +25,6 @@ pub struct Pad {
     hid: Option<Arc<hid::HidPad>>,
     #[cfg(feature = "mock")]
     mock: Option<Arc<MockPad>>,
-    #[cfg(feature = "midi")]
-    midi: Option<Arc<midi::MidiReader>>,
     rx: Receiver<PadEvent>,
     tx: Sender<PadEvent>,
 }
@@ -43,8 +39,6 @@ impl Pad {
             hid: None,
             #[cfg(feature = "mock")]
             mock: None,
-            #[cfg(feature = "midi")]
-            midi: None,
             rx,
             tx,
         })
@@ -101,23 +95,7 @@ impl Pad {
             }
         }
 
-        // Start MIDI interface if configured
-        #[cfg(feature = "midi")]
-        {
-            if _config.midi.enabled {
-                if let Some(ref port_hint) = _config.midi.port_hint {
-                    match midi::MidiReader::spawn_reader(port_hint, self.tx.clone()) {
-                        Ok(reader) => {
-                            self.midi = Some(reader);
-                            info!("MIDI interface started");
-                        }
-                        Err(e) => {
-                            log::warn!("Failed to start MIDI reader: {}", e);
-                        }
-                    }
-                }
-            }
-        }
+
 
         Ok(self.rx.clone())
     }
