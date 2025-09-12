@@ -34,3 +34,6 @@ hidapi = { version = "2", optional = true }
 # GUI dependencies
 eframe = "0.29"
 egui = "0.29"
+
+# Keyboard input
+rdev = "0.5"

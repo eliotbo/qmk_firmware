@@ -1,6 +1,7 @@
 pub mod config;
 pub mod event;
 pub mod state;
+pub mod trading_state;
 
 #[cfg(feature = "hid")]
 pub mod hid;
@@ -116,7 +117,7 @@ impl Pad {
     }
 
     /// Set all LEDs to the same color
-    pub fn set_all_leds(self: Arc<Self>, rgb: Rgb) -> Result<()> {
+    pub fn set_all_leds(&self, rgb: Rgb) -> Result<()> {
         #[cfg(feature = "hid")]
         if let Some(ref hid) = self.hid {
             return hid.set_all_leds(rgb);
@@ -131,7 +132,7 @@ impl Pad {
     }
 
     /// Set a single LED color
-    pub fn set_led(self: Arc<Self>, idx: u8, rgb: Rgb) -> Result<()> {
+    pub fn set_led(&self, idx: u8, rgb: Rgb) -> Result<()> {
         #[cfg(feature = "hid")]
         if let Some(ref hid) = self.hid {
             return hid.set_led(idx, rgb);
@@ -167,7 +168,7 @@ impl Pad {
 }
 
 /// Helper function for LED animations
-pub async fn pulse_led(pad: &Arc<Pad>, idx: u8, color: Rgb, duration_ms: u64) -> Result<()> {
+pub async fn pulse_led(pad: &Pad, idx: u8, color: Rgb, duration_ms: u64) -> Result<()> {
     use tokio::time::{sleep, Duration};
 
     let steps = 20;
@@ -181,7 +182,7 @@ pub async fn pulse_led(pad: &Arc<Pad>, idx: u8, color: Rgb, duration_ms: u64) ->
             g: (color.g as f32 * factor) as u8,
             b: (color.b as f32 * factor) as u8,
         };
-        pad.clone().set_led(idx, rgb)?;
+        pad.set_led(idx, rgb)?;
         sleep(step_duration).await;
     }
 
@@ -193,7 +194,7 @@ pub async fn pulse_led(pad: &Arc<Pad>, idx: u8, color: Rgb, duration_ms: u64) ->
             g: (color.g as f32 * factor) as u8,
             b: (color.b as f32 * factor) as u8,
         };
-        pad.clone().set_led(idx, rgb)?;
+        pad.set_led(idx, rgb)?;
         sleep(step_duration).await;
     }
 

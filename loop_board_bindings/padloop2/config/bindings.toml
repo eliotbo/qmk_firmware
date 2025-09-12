@@ -1,0 +1,90 @@
+# PadLoop2 Trading Application Button Bindings Configuration
+
+[base_layer]
+# Button bindings for Base layer (Layer 0)
+btn0 = "PaperLiveToggle"
+btn1 = "Btn1"
+btn2 = "AccountSelect"
+btn3 = "RefreshData"
+btn4 = "Btn4"
+btn5 = "SymbolLockToggle"
+btn6 = "Btn6"
+btn7 = "Btn7"
+btn8 = "SnapshotBackup"
+
+[base_layer_labels]
+# Display labels for Base layer buttons
+btn0 = "Paper/Live"
+btn1 = "Btn1"
+btn2 = "Account"
+btn3 = "Refresh"
+btn4 = "Btn4"
+btn5 = "Lock Symbol"
+btn6 = "Btn6"
+btn7 = "Btn7"
+btn8 = "Snapshot"
+
+[buy_layer]
+# Button bindings for Buy layer (Layer 1)
+btn0 = "MarketBuy"
+btn1 = "LimitBuy"
+btn2 = "BracketBuy"
+btn3 = "StopEntryBuy"
+btn4 = "ScaleIn25"
+btn5 = "ScaleIn50"
+btn6 = "FlattenCurrentSymbol"
+btn7 = "Btn7"
+btn8 = "ReverseToLong"
+
+[buy_layer_labels]
+# Display labels for Buy layer buttons
+btn0 = "Market Buy"
+btn1 = "Limit Buy"
+btn2 = "Bracket Buy"
+btn3 = "Stop Entry"
+btn4 = "Scale In 25%"
+btn5 = "Scale In 50%"
+btn6 = "Flatten"
+btn7 = "Btn7"
+btn8 = "Reverse Long"
+
+[sell_layer]
+# Button bindings for Sell layer (Layer 2)
+btn0 = "MarketSell"
+btn1 = "LimitSell"
+btn2 = "BracketSell"
+btn3 = "StopEntrySell"
+btn4 = "ScaleOut25"
+btn5 = "ScaleOut50"
+btn6 = "FlattenCurrentSymbol"
+btn7 = "Btn7"
+btn8 = "ReverseToShort"
+
+[sell_layer_labels]
+# Display labels for Sell layer buttons
+btn0 = "Market Sell"
+btn1 = "Limit Sell"
+btn2 = "Bracket Sell"
+btn3 = "Stop Entry"
+btn4 = "Scale Out 25%"
+btn5 = "Scale Out 50%"
+btn6 = "Flatten"
+btn7 = "Btn7"
+btn8 = "Reverse Short"
+
+[encoders]
+# Initial encoder values and modes
+enc1_mode = "Shares"
+enc1_value = 100
+
+enc2_mode = "Ticks"
+enc2_value = 5
+
+enc3_mode = "MidOffset"
+enc3_value = 0
+
+[settings]
+# General application settings
+default_account_type = "Paper"
+default_layer = "Base"
+armed_on_start = false
