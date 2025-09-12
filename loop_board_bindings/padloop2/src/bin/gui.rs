@@ -7,6 +7,29 @@ use crossbeam_channel::{unbounded, Sender};
 use rdev::{listen, Event, EventType, Key};
 use std::sync::atomic::{AtomicBool, Ordering};
 
+fn update_all_leds(pad: &Pad, state: &TradingState, layer: u8) {
+    for idx in 0..9u8 {
+        let color = if state.is_button_bound(layer, idx) {
+            // Check if this is an armed-sensitive button
+            if state.is_action_armed_sensitive(layer, idx) {
+                if state.armed {
+                    Rgb { r: 0, g: 100, b: 0 } // Green for armed sensitive when armed
+                } else {
+                    Rgb { r: 0, g: 0, b: 0 } // Off for armed sensitive when disarmed
+                }
+            } else {
+                Rgb { r: 100, g: 100, b: 100 } // White for regular bound buttons
+            }
+        } else {
+            Rgb { r: 0, g: 0, b: 0 } // Off for unbound buttons
+        };
+        
+        if let Err(e) = pad.set_led(idx, color) {
+            eprintln!("Failed to set LED {}: {}", idx, e);
+        }
+    }
+}
+
 struct PadGuiApp {
     state: Arc<Mutex<TradingState>>,
     layer_tx: Sender<u8>,
@@ -268,6 +291,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut pad = Pad::new(&config).expect("Failed to create pad");
         let rx = pad.spawn(&config).expect("Failed to spawn pad");
         
+        // Initialize LEDs on startup
+        if let Ok(s) = state.lock() {
+            update_all_leds(&pad, &s, 0); // Base layer on startup
+        }
+        
         // Track armed state for LED updates
         let mut last_armed_state = false;
         let mut last_layer = 0u8;
@@ -279,7 +307,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     eprintln!("Failed to set layer: {}", e);
                 }
                 
-                // Update state
+                // Update state and LEDs
                 if let Ok(mut s) = state.lock() {
                     s.set_layer(match layer {
                         0 => Layer::Base,
@@ -288,37 +316,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         _ => Layer::Base,
                     });
                     last_layer = layer;
+                    
+                    // Update all LEDs for the new layer
+                    update_all_leds(&pad, &s, layer);
                 }
             }
             
             // Check if armed state changed and update LEDs
             if let Ok(s) = state.lock() {
-                if s.armed != last_armed_state || last_layer != match s.layer {
+                let current_layer = match s.layer {
                     Layer::Base => 0,
                     Layer::Buy => 1, 
                     Layer::Sell => 2,
-                } {
+                };
+                
+                if s.armed != last_armed_state {
                     last_armed_state = s.armed;
-                    last_layer = match s.layer {
-                        Layer::Base => 0,
-                        Layer::Buy => 1,
-                        Layer::Sell => 2,
-                    };
                     
-                    // Update LEDs for armed-sensitive buttons
-                    for idx in 0..9u8 {
-                        if s.is_action_armed_sensitive(last_layer, idx) {
-                            let color = if s.armed {
-                                Rgb { r: 0, g: 100, b: 0 } // Green when armed
-                            } else {
-                                Rgb { r: 0, g: 0, b: 0 } // Off when disarmed
-                            };
-                            
-                            if let Err(e) = pad.set_led(idx, color) {
-                                eprintln!("Failed to set LED {}: {}", idx, e);
-                            }
-                        }
-                    }
+                    // Update all LEDs when armed state changes
+                    update_all_leds(&pad, &s, current_layer);
                 }
             }
             
@@ -335,6 +351,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 2 => Layer::Sell,
                                 _ => Layer::Base,
                             });
+                            // Update all LEDs when layer changes from pad
+                            update_all_leds(&pad, &s, layer);
                         }
                         PadEvent::Button { layer, idx, pressed } => {
                             s.handle_button(layer, idx, pressed);

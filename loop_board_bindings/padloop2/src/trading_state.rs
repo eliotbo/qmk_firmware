@@ -251,6 +251,54 @@ impl TradingState {
         }
     }
     
+    pub fn is_button_bound(&self, layer: u8, idx: u8) -> bool {
+        match layer {
+            0 => { // Base layer
+                match idx {
+                    0 => self.base_keys.btn0.is_some(),
+                    1 => self.base_keys.btn1.is_some(),
+                    2 => self.base_keys.btn2.is_some(),
+                    3 => self.base_keys.btn3.is_some(),
+                    4 => self.base_keys.btn4.is_some(),
+                    5 => self.base_keys.btn5.is_some(),
+                    6 => self.base_keys.btn6.is_some(),
+                    7 => self.base_keys.btn7.is_some(),
+                    8 => self.base_keys.btn8.is_some(),
+                    _ => false,
+                }
+            }
+            1 => { // Buy layer
+                match idx {
+                    0 => self.buy_keys.btn0.is_some(),
+                    1 => self.buy_keys.btn1.is_some(),
+                    2 => self.buy_keys.btn2.is_some(),
+                    3 => self.buy_keys.btn3.is_some(),
+                    4 => self.buy_keys.btn4.is_some(),
+                    5 => self.buy_keys.btn5.is_some(),
+                    6 => self.buy_keys.btn6.is_some(),
+                    7 => self.buy_keys.btn7.is_some(),
+                    8 => self.buy_keys.btn8.is_some(),
+                    _ => false,
+                }
+            }
+            2 => { // Sell layer
+                match idx {
+                    0 => self.sell_keys.btn0.is_some(),
+                    1 => self.sell_keys.btn1.is_some(),
+                    2 => self.sell_keys.btn2.is_some(),
+                    3 => self.sell_keys.btn3.is_some(),
+                    4 => self.sell_keys.btn4.is_some(),
+                    5 => self.sell_keys.btn5.is_some(),
+                    6 => self.sell_keys.btn6.is_some(),
+                    7 => self.sell_keys.btn7.is_some(),
+                    8 => self.sell_keys.btn8.is_some(),
+                    _ => false,
+                }
+            }
+            _ => false,
+        }
+    }
+    
     pub fn handle_button(&mut self, layer: u8, idx: u8, pressed: bool) {
         if (idx as usize) < KEY_COUNT {
             self.key_pressed[idx as usize] = pressed;
