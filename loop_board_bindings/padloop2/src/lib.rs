@@ -146,7 +146,7 @@ impl Pad {
     }
 
     /// Set the active layer
-    pub fn set_layer(self: Arc<Self>, layer: u8) -> Result<()> {
+    pub fn set_layer(&self, layer: u8) -> Result<()> {
         #[cfg(feature = "hid")]
         if let Some(ref hid) = self.hid {
             return hid.set_layer(layer);

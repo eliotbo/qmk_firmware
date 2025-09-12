@@ -7,6 +7,10 @@ edition = "2021"
 name = "pad-tester"
 path = "src/bin/pad_tester.rs"
 
+[[bin]]
+name = "gui"
+path = "src/bin/gui.rs"
+
 [features]
 default = ["hid"]
 hid = ["dep:hidapi"]
@@ -26,3 +30,7 @@ clap = { version = "4", features = ["derive"] }
 
 # Optional dependencies for features
 hidapi = { version = "2", optional = true }
+
+# GUI dependencies
+eframe = "0.29"
+egui = "0.29"
